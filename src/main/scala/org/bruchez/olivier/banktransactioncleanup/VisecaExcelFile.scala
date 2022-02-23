@@ -15,6 +15,8 @@ case class VisecaExcelFile(file: Path) {
     try {
       val sheet = workbook.getSheetAt(0)
 
+      // @todo complete description using multiple lines
+
       // Drop the first statement (payment from previous month)
       sheet.rowIterator.asScala.toSeq.flatMap(accountStatementFromRow).tail
     } finally {
