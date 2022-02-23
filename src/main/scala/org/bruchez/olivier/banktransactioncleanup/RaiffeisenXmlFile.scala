@@ -16,11 +16,13 @@ case class RaiffeisenXmlFile(file: Path) {
 
   // Specs: https://www.credit-suisse.com/media/assets/microsite/docs/zv-migration/camt-05x-001-04-sps.pdf
 
-  def accountStatements: Seq[AccountStatement] = {
+  def raiffeisenAccountStatements: RaiffeisenAccountStatements = {
     val xmlString = new String(Files.readAllBytes(file), StandardCharsets.UTF_8)
     val parentNode = XML.loadString(xmlString)
 
-    (parentNode \ "BkToCstmrStmt" \ "Stmt" \ "Ntry").flatMap(accountStatements)
+    RaiffeisenAccountStatements(
+      file,
+      (parentNode \ "BkToCstmrStmt" \ "Stmt" \ "Ntry").flatMap(accountStatements))
   }
 
   private def accountStatements(node: xml.Node): Seq[AccountStatement] = {

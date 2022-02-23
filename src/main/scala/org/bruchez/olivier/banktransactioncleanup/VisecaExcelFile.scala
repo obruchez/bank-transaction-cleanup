@@ -9,7 +9,7 @@ import scala.jdk.CollectionConverters._
 import scala.util.Try
 
 case class VisecaExcelFile(file: Path) {
-  def accountStatements: Seq[AccountStatement] = {
+  def visecaAccountStatements: VisecaAccountStatements = {
     val workbook = WorkbookFactory.create(file.toFile)
 
     try {
@@ -17,8 +17,13 @@ case class VisecaExcelFile(file: Path) {
 
       // @todo complete description using multiple lines
 
-      // Drop the first statement (payment from previous month)
-      sheet.rowIterator.asScala.toSeq.flatMap(accountStatementFromRow).tail
+      val accountStatements = sheet.rowIterator.asScala.toSeq.flatMap(accountStatementFromRow)
+
+      // The first statement is the payment from the previous month
+      VisecaAccountStatements(file,
+                              accountStatements.tail,
+                              paymentFromPreviousMonth = -accountStatements.head.amount)
+
     } finally {
       workbook.close()
     }
