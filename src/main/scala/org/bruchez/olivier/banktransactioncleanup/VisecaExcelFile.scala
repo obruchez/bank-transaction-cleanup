@@ -52,12 +52,12 @@ case class VisecaExcelFile(file: Path) {
       val Currency = "CHF"
 
       AccountStatement.withoutNewlines(cells(DatesIndex)) match {
-        case DatesAndDescriptionPattern(valueDay,
-                                        valueMonth,
-                                        valueYear,
-                                        bookingDay,
+        case DatesAndDescriptionPattern(bookingDay,
                                         bookingMonth,
                                         bookingYear,
+                                        valueDay,
+                                        valueMonth,
+                                        valueYear,
                                         description) =>
           Some(
             AccountStatement(
@@ -68,7 +68,7 @@ case class VisecaExcelFile(file: Path) {
               description = description
             ))
 
-        case DatesPattern(valueDay, valueMonth, valueYear, bookingDay, bookingMonth, bookingYear) =>
+        case DatesPattern(bookingDay, bookingMonth, bookingYear, valueDay, valueMonth, valueYear) =>
           Some(
             AccountStatement(
               amountFromString(cells.last),

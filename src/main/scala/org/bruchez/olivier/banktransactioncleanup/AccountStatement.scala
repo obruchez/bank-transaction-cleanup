@@ -8,7 +8,9 @@ case class AccountStatement(amount: Rational,
                             currency: String,
                             bookingDate: LocalDate,
                             valueDate: LocalDate,
-                            description: String)
+                            description: String) {
+  val valueYear: Int = valueDate.getYear
+}
 
 case object AccountStatement {
   def withoutNewlines(string: String): String = string.replaceAll("[\n\r]+", " / ")

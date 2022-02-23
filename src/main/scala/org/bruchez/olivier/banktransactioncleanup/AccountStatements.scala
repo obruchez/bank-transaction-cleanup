@@ -15,6 +15,10 @@ sealed trait AccountStatements {
 case class RaiffeisenAccountStatements(override val file: Path,
                                        override val accountStatements: Seq[AccountStatement])
     extends AccountStatements {
+  def filteredByYear(year: Int): RaiffeisenAccountStatements = {
+    this.copy(accountStatements = this.accountStatements.filter(_.valueYear == year))
+  }
+
   def mergedWithVisecaAccountStatements(
       visecaAccountStatements: Seq[VisecaAccountStatements]): RaiffeisenAccountStatements = {
 

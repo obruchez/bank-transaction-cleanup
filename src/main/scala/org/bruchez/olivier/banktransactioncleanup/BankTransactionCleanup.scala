@@ -28,8 +28,12 @@ object BankTransactionCleanup {
 
     println(s"Raiffeisen total (before merge): ${raiffeisenAccountStatements.totalAmount.toDouble}")
 
+    val Year = 2021
+
     val mergedRaiffeisenAccountStatements =
-      raiffeisenAccountStatements.mergedWithVisecaAccountStatements(visecaAccountStatements)
+      raiffeisenAccountStatements
+        .mergedWithVisecaAccountStatements(visecaAccountStatements)
+        .filteredByYear(year = Year)
 
     println(
       s"Raiffeisen total (after merge): ${mergedRaiffeisenAccountStatements.totalAmount.toDouble}")
