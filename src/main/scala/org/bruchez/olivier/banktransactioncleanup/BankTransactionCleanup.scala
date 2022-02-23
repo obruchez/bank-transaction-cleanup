@@ -10,7 +10,7 @@ object BankTransactionCleanup {
   }
 
   def test(path: Path): Unit = {
-    val accountStatements = AccountStatement(path)
+    val accountStatements = RaiffeisenXmlFile(path).accountStatements
     println(accountStatements.mkString("\n"))
 
     val total = accountStatements.map(_.amount).qsum
