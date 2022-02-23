@@ -11,5 +11,5 @@ case class AccountStatement(amount: Rational,
                             description: String)
 
 case object AccountStatement {
-  def normalizedDescription(string: String): String = string.replaceAll("[\n\r]+", " / ")
+  def withoutNewlines(string: String): String = string.replaceAll("[\n\r]+", " / ")
 }

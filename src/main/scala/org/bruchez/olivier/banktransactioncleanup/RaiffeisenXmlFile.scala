@@ -29,14 +29,14 @@ case class RaiffeisenXmlFile(file: Path) {
       currency = (node \ "Amt" \ "@Ccy").text,
       bookingDate = LocalDate.parse((node \ "BookgDt" \ "Dt").text),
       valueDate = LocalDate.parse((node \ "ValDt" \ "Dt").text),
-      description = AccountStatement.normalizedDescription((node \ "AddtlNtryInf").text)
+      description = AccountStatement.withoutNewlines((node \ "AddtlNtryInf").text)
     )
 
     val entryDetails = for { details <- node \ "NtryDtls" \ "TxDtls" } yield
       AccountStatementDetails(
         amount = amountWithSign(details),
         currency = (details \ "Amt" \ "@Ccy").text,
-        name = AccountStatement.normalizedDescription((details \ "RltdPties" \ "Cdtr" \ "Nm").text),
+        name = AccountStatement.withoutNewlines((details \ "RltdPties" \ "Cdtr" \ "Nm").text),
         iban =
           Option((details \ "RltdPties" \ "CdtrAcct" \ "Id" \ "IBAN").text.trim).filter(_.nonEmpty)
       )
