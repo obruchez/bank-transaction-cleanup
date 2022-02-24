@@ -1,41 +1,48 @@
 package org.bruchez.olivier.banktransactioncleanup
 
 import java.nio.file.{Path, Paths}
+import spire.implicits._
 
 object BankTransactionCleanup {
   def main(args: Array[String]): Unit = {
-    //raiffeisenTest(Paths.get(args(0)))
-    //visecaTest(Paths.get(args(0)))
-    mergeTest(Paths.get(args(0)), Paths.get(args(1)))
-  }
-
-  def raiffeisenTest(file: Path): Unit = {
-    val raiffeisenAccountStatements = RaiffeisenAccountStatements.fromFile(file)
-
-    println(raiffeisenAccountStatements.accountStatements.mkString("\n"))
-    println(s"Total: ${raiffeisenAccountStatements.totalAmount.toDouble}")
-  }
-
-  def visecaTest(directory: Path): Unit =
-    VisecaAccountStatements.fromDirectory(directory) foreach { visecaAccountStatements =>
-      println(
-        s"Total (${visecaAccountStatements.file.toFile.getName}): ${visecaAccountStatements.totalAmount.toDouble}")
-    }
-
-  def mergeTest(file: Path, directory: Path): Unit = {
-    val raiffeisenAccountStatements = RaiffeisenAccountStatements.fromFile(file)
-    val visecaAccountStatements = VisecaAccountStatements.fromDirectory(directory)
-
-    println(s"Raiffeisen total (before merge): ${raiffeisenAccountStatements.totalAmount.toDouble}")
-
     val Year = 2021
 
-    val mergedRaiffeisenAccountStatements =
-      raiffeisenAccountStatements
-        .mergedWithVisecaAccountStatements(visecaAccountStatements)
-        .filteredByYear(year = Year)
+    val raiffeisenAccountStatements =
+      this.raiffeisenAccountStatements(Paths.get(args(0)),
+                                       args.toSeq.tail.map(Paths.get(_)),
+                                       year = Year)
 
-    println(
-      s"Raiffeisen total (after merge): ${mergedRaiffeisenAccountStatements.totalAmount.toDouble}")
+    val credits = raiffeisenAccountStatements.accountStatements.map(_.amount).filter(_ < 0).qsum
+    val debits = raiffeisenAccountStatements.accountStatements.map(_.amount).filter(_ >= 0).qsum
+
+    println(s"Transactions: ${raiffeisenAccountStatements.accountStatements.size}")
+    println(s"Total: ${raiffeisenAccountStatements.totalAmount.toDouble}")
+    println(s"Credits: ${credits.toDouble}")
+    println(s"Debits: ${debits.toDouble}")
+  }
+
+  def raiffeisenAccountStatements(raiffeisenXmlFile: Path,
+                                  visecaExcelDirectories: Seq[Path],
+                                  year: Int): RaiffeisenAccountStatements = {
+
+    val raiffeisenAccountStatements = RaiffeisenAccountStatements.fromFile(raiffeisenXmlFile)
+
+    @scala.annotation.tailrec
+    def merge(raiffeisenAccountStatements: RaiffeisenAccountStatements,
+              visecaExcelDirectories: List[Path]): RaiffeisenAccountStatements =
+      visecaExcelDirectories match {
+        case Nil => raiffeisenAccountStatements
+
+        case visecaExcelDirectory :: remainingVisecaExcelDirectories =>
+          val visecaAccountStatements = VisecaAccountStatements.fromDirectory(visecaExcelDirectory)
+          val mergedRaiffeisenAccountStatements =
+            raiffeisenAccountStatements
+              .mergedWithVisecaAccountStatements(visecaAccountStatements)
+              .filteredByYear(year)
+
+          merge(mergedRaiffeisenAccountStatements, remainingVisecaExcelDirectories)
+      }
+
+    merge(raiffeisenAccountStatements, visecaExcelDirectories.toList)
   }
 }
