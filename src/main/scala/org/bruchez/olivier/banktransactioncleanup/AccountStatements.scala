@@ -1,8 +1,10 @@
 package org.bruchez.olivier.banktransactioncleanup
 
+import org.apache.poi.xssf.usermodel.XSSFWorkbook
 import spire.implicits._
 import spire.math.Rational
 
+import java.io.FileOutputStream
 import java.nio.file.Path
 
 sealed trait AccountStatements {
@@ -44,6 +46,35 @@ case class RaiffeisenAccountStatements(override val file: Path,
       }
 
     merged(this, visecaAccountStatementsWithPaymentsFromNextMonth.toList)
+  }
+
+  def exportToExcel(file: Path): Unit = {
+    val workbook = new XSSFWorkbook
+    val sheet = workbook.createSheet("Transactions")
+
+    val headerRow = sheet.createRow(0)
+    headerRow.createCell(0).setCellValue("Date")
+    headerRow.createCell(1).setCellValue("Valeur")
+    headerRow.createCell(2).setCellValue("Description")
+
+    for { (accountStatement, index) <- this.accountStatements.zipWithIndex } {
+      val row = sheet.createRow(index + 1)
+
+      // Invert sign of amount for import into e.g. Money Pro
+      row.createCell(0).setCellValue(accountStatement.valueDate)
+      row.createCell(1).setCellValue(-accountStatement.amount.toDouble)
+      row.createCell(2).setCellValue(accountStatement.description)
+    }
+
+    val outputStream = new FileOutputStream(file.toFile)
+
+    try {
+      workbook.write(outputStream)
+    } finally {
+      if (outputStream != null) {
+        outputStream.close()
+      }
+    }
   }
 
   private def mergedWithVisecaAccountStatements(

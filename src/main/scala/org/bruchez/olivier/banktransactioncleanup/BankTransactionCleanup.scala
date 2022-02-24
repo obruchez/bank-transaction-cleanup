@@ -19,6 +19,11 @@ object BankTransactionCleanup {
     println(s"Total: ${raiffeisenAccountStatements.totalAmount.toDouble}")
     println(s"Credits: ${credits.toDouble}")
     println(s"Debits: ${debits.toDouble}")
+
+    //val sortedAccountStatements = raiffeisenAccountStatements.accountStatements.sortBy(_.amount)
+    //sortedAccountStatements.foreach(as => println(s" - ${as.amount.toDouble} / ${as.description}"))
+
+    raiffeisenAccountStatements.exportToExcel(Paths.get("raiffeisen.xlsx"))
   }
 
   def raiffeisenAccountStatements(raiffeisenXmlFile: Path,
