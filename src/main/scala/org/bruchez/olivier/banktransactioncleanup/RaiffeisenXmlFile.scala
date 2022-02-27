@@ -9,6 +9,12 @@ import java.time.LocalDate
 import scala.xml.XML
 
 case class RaiffeisenXmlFile(file: Path) {
+  private val source: String = {
+    val filename = file.toFile.getName
+    if (filename.toLowerCase.endsWith(".xml")) filename.substring(0, filename.length - 4)
+    else filename
+  }
+
   private case class AccountStatementDetails(amount: Rational,
                                              currency: String,
                                              name: String,
@@ -20,18 +26,19 @@ case class RaiffeisenXmlFile(file: Path) {
     val xmlString = new String(Files.readAllBytes(file), StandardCharsets.UTF_8)
     val parentNode = XML.loadString(xmlString)
 
-    RaiffeisenAccountStatements(
-      file,
-      (parentNode \ "BkToCstmrStmt" \ "Stmt" \ "Ntry").flatMap(accountStatements))
+    RaiffeisenAccountStatements(file,
+                                (parentNode \ "BkToCstmrStmt" \ "Stmt" \ "Ntry")
+                                  .flatMap(accountStatements(_, source)))
   }
 
-  private def accountStatements(node: xml.Node): Seq[AccountStatement] = {
+  private def accountStatements(node: xml.Node, source: String): Seq[AccountStatement] = {
     val accountStatement = AccountStatement(
       amount = amountWithSign(node),
       currency = (node \ "Amt" \ "@Ccy").text,
       bookingDate = LocalDate.parse((node \ "BookgDt" \ "Dt").text),
       valueDate = LocalDate.parse((node \ "ValDt" \ "Dt").text),
-      description = AccountStatement.withoutNewlines((node \ "AddtlNtryInf").text)
+      description = AccountStatement.withoutNewlines((node \ "AddtlNtryInf").text),
+      source = source
     )
 
     val entryDetails = for { details <- node \ "NtryDtls" \ "TxDtls" } yield

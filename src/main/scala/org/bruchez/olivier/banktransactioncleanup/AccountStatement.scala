@@ -8,7 +8,8 @@ case class AccountStatement(amount: Rational,
                             currency: String,
                             bookingDate: LocalDate,
                             valueDate: LocalDate,
-                            description: String) {
+                            description: String,
+                            source: String) {
   val valueYear: Int = valueDate.getYear
 }
 

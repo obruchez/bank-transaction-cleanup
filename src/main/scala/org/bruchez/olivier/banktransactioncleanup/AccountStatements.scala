@@ -55,7 +55,8 @@ case class RaiffeisenAccountStatements(override val file: Path,
     val headerRow = sheet.createRow(0)
     headerRow.createCell(0).setCellValue("Date")
     headerRow.createCell(1).setCellValue("Valeur")
-    headerRow.createCell(2).setCellValue("Description")
+    headerRow.createCell(2).setCellValue("Source")
+    headerRow.createCell(3).setCellValue("Description")
 
     for { (accountStatement, index) <- this.accountStatements.zipWithIndex } {
       val row = sheet.createRow(index + 1)
@@ -63,7 +64,8 @@ case class RaiffeisenAccountStatements(override val file: Path,
       // Invert sign of amount for import into e.g. Money Pro
       row.createCell(0).setCellValue(accountStatement.valueDate)
       row.createCell(1).setCellValue(-accountStatement.amount.toDouble)
-      row.createCell(2).setCellValue(accountStatement.description)
+      row.createCell(2).setCellValue(accountStatement.source)
+      row.createCell(3).setCellValue(accountStatement.description)
     }
 
     val outputStream = new FileOutputStream(file.toFile)

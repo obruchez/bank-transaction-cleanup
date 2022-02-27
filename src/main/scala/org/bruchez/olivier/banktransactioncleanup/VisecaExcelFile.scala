@@ -9,6 +9,8 @@ import scala.jdk.CollectionConverters._
 import scala.util.Try
 
 case class VisecaExcelFile(file: Path) {
+  private val source: String = file.toFile.getParentFile.getName
+
   def visecaAccountStatements: VisecaAccountStatements = {
     val workbook = WorkbookFactory.create(file.toFile)
 
@@ -76,7 +78,8 @@ case class VisecaExcelFile(file: Path) {
               currency = Currency,
               bookingDate = localDateFromStrings(bookingDay, bookingMonth, bookingYear),
               valueDate = localDateFromStrings(valueDay, valueMonth, valueYear),
-              description = description
+              description = description,
+              source = source
             ))
 
         case DatesPattern(bookingDay, bookingMonth, bookingYear, valueDay, valueMonth, valueYear) =>
@@ -86,7 +89,8 @@ case class VisecaExcelFile(file: Path) {
               currency = Currency,
               bookingDate = localDateFromStrings(bookingDay, bookingMonth, bookingYear),
               valueDate = localDateFromStrings(valueDay, valueMonth, valueYear),
-              description = AccountStatement.withoutNewlines(cells(DescriptionIndex))
+              description = AccountStatement.withoutNewlines(cells(DescriptionIndex)),
+              source = source
             ))
 
         case _ =>
